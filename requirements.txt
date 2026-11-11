@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+openai
+httpx
+pydantic
+requests
+langchain-core
+langchain-openai
+langgraph
+python-dotenv
+
+# 可选：7z / rar 解析
+# py7zr
+# rarfile

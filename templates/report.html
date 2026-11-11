@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>钓鱼邮件溯源明细报告</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; margin: 40px auto; max-width: 1200px; background: #f5f6f8; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #2c3e50; margin-top: 30px; }
+        .card { background: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .ioc { font-weight: bold; }
+        .reason { color: #d35400; font-weight: bold; background: #fdf2e9; padding: 8px; border-left: 4px solid #e67e22; margin: 10px 0; }
+        .meta { color: #666; font-size: 14px; }
+        ul { padding-left: 20px; margin: 6px 0; }
+        .spoofed-tag { color: white; background: #e74c3c; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
+        .safe { color: #27ae60; }
+        .malicious { color: #e74c3c; font-weight: bold; }
+        .suspicious { color: #f39c12; font-weight: bold; }
+        .unknown { color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <h1>🛡️ 钓鱼邮件溯源明细报告</h1>
+    <p class="meta">生成时间：{{ gen_time }} | <strong>有效期 3 天</strong></p>
+    <h2>一、 攻击特征汇总</h2>
+    {% for camp in campaigns %}
+    <div class="card">
+        <h3>活动：{{ camp.name }}</h3>
+        <div class="reason">📌 判定原因：{{ camp.reason }}</div>
+        <p><strong>关联 IOC 域名及情报：</strong> {{ camp.domains_html }}</p>
+        <p><strong>关联 IOC IP 及情报：</strong> {{ camp.ips_html }}</p>
+        <p><strong>恶意发件人：</strong> {{ camp.senders }}</p>
+    </div>
+    {% endfor %}
+    <h2>二、 溯源命中名单</h2>
+    {% if success_alerts %}
+        {% for alert in success_alerts %}
+        <div class="card">
+            <h3>溯源命中日志：{{ alert.user_count }} 人</h3>
+            <table>
+                <thead><tr><th>收件人</th><th>真实发件人</th><th>自称发件人</th><th>时间</th><th>邮件主题</th></tr></thead>
+                <tbody>
+                {% for u in alert.users %}
+                <tr>
+                    <td>{{ u.user }}</td>
+                    <td>{{ u.sender }}</td>
+                    <td>{{ u.from_display }}{% if u.is_spoofed %}<span class="spoofed-tag">伪装内部</span>{% endif %}</td>
+                    <td>{{ u.time }}</td>
+                    <td>{{ u.subject }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card"><p style="color: #c00;">⚠️ 攻击者使用了完全随机化的特征，目前无法定位具体哪些用户收到了这些邮件。</p></div>
+    {% endif %}
+</body>
+</html>
